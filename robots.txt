@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://cuentas-claras-nvsblw3yw-los-cuajaos.vercel.app/sitemap.xml
