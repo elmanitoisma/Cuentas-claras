@@ -3,7 +3,6 @@
 const eur=(n,d=0)=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:d}).format(Number.isFinite(n)?n:0);
 const pct=n=>new Intl.NumberFormat('es-ES',{maximumFractionDigits:1}).format(Number.isFinite(n)?n:0)+' %';
 const num=id=>Math.max(0,parseFloat(document.getElementById(id)?.value)||0);
-const raw=id=>parseFloat(document.getElementById(id)?.value)||0;
 const out=html=>{const el=document.querySelector('[data-output]');if(el)el.innerHTML=html};
 const metric=(label,value)=>`<div class="metric"><span>${label}</span><strong>${value}</strong></div>`;
 const metrics=items=>`<div class="metrics">${items.map(([a,b])=>metric(a,b)).join('')}</div>`;
@@ -19,6 +18,8 @@ function chart(values,contrib){
 function annuityPayment(P,n,annual){const r=annual/1200;return r===0?P/n:P*r/(1-Math.pow(1+r,-n))}
 function annuityPrincipal(payment,n,annual){const r=annual/1200;return r===0?payment*n:payment*(1-Math.pow(1+r,-n))/r}
 let trackedCalculator=false;
+let trackedInteraction=false;
+const calculatorType=()=>document.body.dataset.calc||'';
 const calculators={
   compound(){
     const ini=num('c-ini'),mes=num('c-mes'),years=Math.min(60,Math.max(1,Math.round(num('c-years')))),annual=num('c-rate'),r=annual/1200;
@@ -65,22 +66,24 @@ const calculators={
     out(`<div class="big"><small>Efectivo estimado necesario</small>${eur(cash)}</div>${metrics([['Entrada',eur(down)],['Otros costes estimados',eur(costs)],['Hipoteca teórica',eur(mortgage)]])}${gap>=0?notice('Ahorro suficiente para este supuesto',`Con los porcentajes introducidos sobrarían ${eur(gap)} respecto al efectivo calculado.`):notice('Ahorro pendiente',`Con los porcentajes introducidos faltarían ${eur(Math.abs(gap))} para cubrir entrada y costes estimados.`,'warn')}${note('Los gastos reales de compra dependen de la operación, la vivienda y tu situación. Por eso el porcentaje de costes es editable.')}`);
   }
 };
-function run(){const type=document.body.dataset.calc;if(type&&calculators[type]){calculators[type]();if(!trackedCalculator){track('calculator_view',{calculator:type});trackedCalculator=true}}}
-document.querySelectorAll('[data-calc-input]').forEach(el=>el.addEventListener('input',run));
+function storedAttribution(){try{return JSON.parse(localStorage.getItem('cc_attribution')||'{}')||{}}catch{return {}}}
+function track(name,params={}){if(typeof window.gtag==='function'){window.gtag('event',name,{...storedAttribution(),...params});return true}return false}
+function trackCalculatorView(){const type=calculatorType();if(type&&!trackedCalculator&&track('calculator_view',{calculator:type})){trackedCalculator=true}}
+function run(){const type=calculatorType();if(type&&calculators[type]){calculators[type]();trackCalculatorView()}}
+document.querySelectorAll('[data-calc-input]').forEach(el=>el.addEventListener('input',()=>{run();const type=calculatorType();if(type&&!trackedInteraction&&track('calculator_interaction',{calculator:type})){trackedInteraction=true}}));
 
 // Share/copy helpers
-async function copyLink(){try{await navigator.clipboard.writeText(location.href);flash('Enlace copiado')}catch{flash('Copia la URL del navegador')}}
+async function copyLink(){try{await navigator.clipboard.writeText(location.href);flash('Enlace copiado');track('copy_link',{calculator:calculatorType()||'none'})}catch{flash('Copia la URL del navegador')}}
 function flash(text){const b=document.querySelector('[data-copy]');if(!b)return;const old=b.textContent;b.textContent=text;setTimeout(()=>b.textContent=old,1600)}
 document.querySelector('[data-copy]')?.addEventListener('click',copyLink);
-document.querySelector('[data-share]')?.addEventListener('click',async()=>{if(navigator.share){try{await navigator.share({title:document.title,url:location.href})}catch{}}else copyLink()});
+document.querySelector('[data-share]')?.addEventListener('click',async()=>{if(navigator.share){try{await navigator.share({title:document.title,url:location.href});track('share_click',{calculator:calculatorType()||'none'})}catch{}}else copyLink()});
 
 // Preserve organic campaign attribution locally; no data leaves the browser unless analytics is enabled.
 const params=new URLSearchParams(location.search);const keys=['utm_source','utm_medium','utm_campaign','utm_content'];const attribution={};keys.forEach(k=>{if(params.get(k))attribution[k]=params.get(k)});try{if(Object.keys(attribution).length)localStorage.setItem('cc_attribution',JSON.stringify(attribution))}catch{}
 
-// Optional GA4: disabled by default. Only loads after consent.
+// GA4 only loads after explicit consent.
 function gaId(){return window.CC_CONFIG?.GA_MEASUREMENT_ID?.trim()||''}
-function loadGA(){const id=gaId();if(!id||window.__ccGaLoaded)return;window.__ccGaLoaded=true;const s=document.createElement('script');s.async=true;s.src=`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;document.head.appendChild(s);window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config',id,{anonymize_ip:true});}
-function track(name,params={}){if(typeof window.gtag==='function')window.gtag('event',name,params)}
+function loadGA(){const id=gaId();if(!id||window.__ccGaLoaded)return;window.__ccGaLoaded=true;const s=document.createElement('script');s.async=true;s.src=`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;document.head.appendChild(s);window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config',id,{anonymize_ip:true});trackCalculatorView()}
 if(gaId()){
   let pref=null;try{pref=localStorage.getItem('cc_analytics_consent')}catch{} const box=document.querySelector('[data-cookie]');
   if(pref==='yes')loadGA(); else if(pref!=='no')box?.classList.add('show');
