@@ -127,6 +127,11 @@ h1,h2,h3,p{margin-top:0}
 .site-footer a:not(.logo){display:block;text-decoration:none;margin:7px 0}
 .site-footer a:hover{color:var(--ink)}
 .footer-bottom{display:flex;justify-content:space-between;gap:20px;border-top:1px solid var(--line);margin-top:34px;padding-top:18px;font-size:.75rem}
+.privacy-preferences{margin-top:18px}
+.privacy-preferences-button{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 13px;border-radius:10px;font:inherit;cursor:pointer}
+.privacy-preferences-button:hover,.privacy-preferences-button:focus-visible{border-color:var(--teal);outline-offset:3px}
+.cookie a{color:var(--teal);text-decoration:underline}
+
 
 /* Shared calculator and guide pages */
 .hero{padding:58px 0 46px}
