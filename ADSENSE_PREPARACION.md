@@ -9,7 +9,7 @@ Estado de revisión: 29 de octubre de 2026.
 - Calculadoras y guías originales, con ejemplos y metodología explicada.
 - Google Analytics 4 está integrado con consentimiento previo y un control para cambiar las preferencias.
 - Existen páginas públicas de aviso legal, privacidad y cookies, **todavía con información identificativa pendiente**.
-- **Google AdSense no está integrado**: no consta ID de editor, código de verificación, `ads.txt` ni CMP publicitaria activada.
+- **Verificación AdSense preparada**: metaetiqueta `google-adsense-account` instalada en la portada y tres calculadoras principales; archivo `ads.txt` creado con el ID de editor aportado por el titular. No se ha cargado el script publicitario ni configurado una CMP publicitaria.
 - Los contenidos sobre finanzas son informativos, no asesoramiento financiero.
 
 ## Paso 1 — Revisar la identidad y la información legal
@@ -45,9 +45,10 @@ Estado de revisión: 29 de octubre de 2026.
 ## Pendientes que bloquean la activación de anuncios
 - [ ] Confirmación y publicación adecuada de la identidad legal del titular.
 - [ ] Política de privacidad y cookies revisadas y auditadas.
-- [ ] Cuenta AdSense y método de verificación proporcionados por Google.
-- [ ] ID de editor `pub-...` real.
+- [x] Cuenta AdSense creada; método de etiqueta meta configurado en el sitio (el titular debe seleccionar **Etiqueta meta** y hacer clic en **Verificar** en AdSense).
+- [x] ID de editor real configurado en `ads.txt` y en la etiqueta meta (sin mostrarlo de nuevo en esta lista).
 - [ ] CMP de Google configurada y probada antes de mostrar publicidad.
+- [ ] Confirmación de verificación por AdSense.
 - [ ] Revisión/aceptación por AdSense.
 
 ## Referencias oficiales
@@ -57,3 +58,12 @@ Estado de revisión: 29 de octubre de 2026.
 - https://support.google.com/adsense/answer/13554116?hl=es
 - https://support.google.com/adsense/answer/2784438?hl=es
 - https://developers.google.com/search/docs/fundamentals/creating-helpful-content?hl=es
+
+## Estado de esta integración — 29/10/2026
+- Vercel informa de un despliegue correcto de los archivos modificados.
+- Se ha configurado `<meta name="google-adsense-account" ...>` en la portada y tres calculadoras principales.
+- El archivo `/ads.txt` contiene la línea estándar de Google con el ID real facilitado en una captura de AdSense.
+- El script de anuncios no se ha añadido, y ningún código publicitario se activa por la metaetiqueta ni por `ads.txt`.
+- **Pendiente:** verificar en la interfaz de AdSense con el método «Etiqueta meta». Google realiza la comprobación en sus servidores.
+- **Pendiente:** confirmar respuesta HTTP 200 y contenido correcto de `https://cuentas-claras-murex-delta.vercel.app/ads.txt` en un navegador externo; el despliegue exitoso no sustituye esta prueba.
+- **No solicitar revisión final hasta resolver** la identificación legal del sitio y completar las políticas de privacidad/cookies y el plan de consentimiento publicitario. Estos asuntos pueden afectar a la aprobación y al cumplimiento legal.
