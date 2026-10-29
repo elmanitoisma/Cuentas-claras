@@ -115,34 +115,44 @@ function trackCalculatorView(){const type=calculatorType();if(type&&!trackedCalc
 function run(){const type=calculatorType();if(type&&calculators[type]){calculators[type]();trackCalculatorView()}}
 document.querySelectorAll('[data-calc-input]').forEach(el=>el.addEventListener('input',()=>{run();const type=calculatorType();if(type&&!trackedInteraction&&track('calculator_interaction',{calculator:type})){trackedInteraction=true}}));
 
-// Share/copy helpers. En interés compuesto se comparte el escenario realmente visible.
+// Enlaces compartibles: guardan únicamente cifras introducidas, sin datos personales.
 const compoundParams=[
-  ['inicio','c-ini',0,100000000],
-  ['mensual','c-mes',0,10000000],
-  ['anios','c-years',1,60],
-  ['interes','c-rate',0,50],
-  ['mensualB','c-alt-monthly',0,10000000],
-  ['aniosB','c-alt-years',1,60],
+  ['inicio','c-ini',0,100000000],['mensual','c-mes',0,10000000],
+  ['anios','c-years',1,60],['interes','c-rate',0,50],
+  ['mensualB','c-alt-monthly',0,10000000],['aniosB','c-alt-years',1,60],
   ['interesB','c-alt-rate',0,50]
 ];
+const homebuyParams=[
+  ['precio','h-price',0,100000000],['entrada','h-down',0,100],
+  ['gastos','h-costs',0,50],['ahorrado','h-saved',0,100000000],
+  ['ahorroMes','h-monthly-save',0,10000000],['plazo','h-mortgage-years',1,50],
+  ['tin','h-mortgage-rate',0,30]
+];
+function activeShareParams(){
+  if(calculatorType()==='compound')return compoundParams;
+  if(calculatorType()==='homebuy')return homebuyParams;
+  return [];
+}
 function calculatorShareUrl(){
-  if(calculatorType()!=='compound')return location.href;
+  const fields=activeShareParams();
+  if(!fields.length)return location.href;
   const u=new URL(location.href);
-  for(const [key,id,min,max] of compoundParams){
+  for(const [key,id,min,max] of fields){
     const el=document.getElementById(id);
     if(!el)continue;
-    const val=parseFloat(el.value);
+    const val=Number(el.value);
     if(Number.isFinite(val))u.searchParams.set(key,String(Math.min(max,Math.max(min,val))));
   }
   return u.toString();
 }
-function applyCompoundQuery(){
-  if(calculatorType()!=='compound')return;
+function applyCalculatorQuery(){
+  const fields=activeShareParams();
+  if(!fields.length)return;
   const params=new URLSearchParams(location.search);
-  for(const [key,id,min,max] of compoundParams){
-    const value=params.get(key),el=document.getElementById(id);
-    if(value===null||!el||value.length>30)continue;
-    const n=Number(value);
+  for(const [key,id,min,max] of fields){
+    const val=params.get(key),el=document.getElementById(id);
+    if(val===null||!el||val.length>30)continue;
+    const n=Number(val);
     if(Number.isFinite(n)&&n>=min&&n<=max)el.value=String(n);
   }
 }
@@ -150,7 +160,7 @@ async function copyLink(){try{await navigator.clipboard.writeText(calculatorShar
 function flash(text){const b=document.querySelector('[data-copy]');if(!b)return;const old=b.textContent;b.textContent=text;setTimeout(()=>b.textContent=old,1600)}
 document.querySelector('[data-copy]')?.addEventListener('click',copyLink);
 document.querySelector('[data-share]')?.addEventListener('click',async()=>{if(navigator.share){try{await navigator.share({title:document.title,url:calculatorShareUrl()});track('share_click',{calculator:calculatorType()||'none'})}catch{}}else copyLink()});
-applyCompoundQuery();
+applyCalculatorQuery();
 document.querySelectorAll('[data-compound-preset]').forEach(btn=>btn.addEventListener('click',()=>{
   const value=Number(btn.dataset.compoundPreset),input=document.getElementById('c-alt-monthly');
   if(!input||![100,200,300].includes(value))return;
