@@ -66,7 +66,7 @@ const calculators={
     out(`<div class="big"><small>Efectivo estimado necesario</small>${eur(cash)}</div>${metrics([['Entrada',eur(down)],['Otros costes estimados',eur(costs)],['Hipoteca teórica',eur(mortgage)]])}${gap>=0?notice('Ahorro suficiente para este supuesto',`Con los porcentajes introducidos sobrarían ${eur(gap)} respecto al efectivo calculado.`):notice('Ahorro pendiente',`Con los porcentajes introducidos faltarían ${eur(Math.abs(gap))} para cubrir entrada y costes estimados.`,'warn')}${note('Los gastos reales de compra dependen de la operación, la vivienda y tu situación. Por eso el porcentaje de costes es editable.')}`);
   }
 };
-function storedAttribution(){try{return JSON.parse(localStorage.getItem('cc_attribution')||'{}')||{}}catch{return {}}}
+function storedAttribution(){try{return localStorage.getItem('cc_analytics_consent')==='yes'?(JSON.parse(localStorage.getItem('cc_attribution')||'{}')||{}):{}}catch{return {}}}
 function track(name,params={}){if(typeof window.gtag==='function'){window.gtag('event',name,{...storedAttribution(),...params});return true}return false}
 function trackCalculatorView(){const type=calculatorType();if(type&&!trackedCalculator&&track('calculator_view',{calculator:type})){trackedCalculator=true}}
 function run(){const type=calculatorType();if(type&&calculators[type]){calculators[type]();trackCalculatorView()}}
@@ -78,17 +78,86 @@ function flash(text){const b=document.querySelector('[data-copy]');if(!b)return;
 document.querySelector('[data-copy]')?.addEventListener('click',copyLink);
 document.querySelector('[data-share]')?.addEventListener('click',async()=>{if(navigator.share){try{await navigator.share({title:document.title,url:location.href});track('share_click',{calculator:calculatorType()||'none'})}catch{}}else copyLink()});
 
-// Preserve organic campaign attribution locally; no data leaves the browser unless analytics is enabled.
-const params=new URLSearchParams(location.search);const keys=['utm_source','utm_medium','utm_campaign','utm_content'];const attribution={};keys.forEach(k=>{if(params.get(k))attribution[k]=params.get(k)});try{if(Object.keys(attribution).length)localStorage.setItem('cc_attribution',JSON.stringify(attribution))}catch{}
+// Guardar atribución de campaña solo cuando la persona ha aceptado Analytics.
+const params=new URLSearchParams(location.search);
+const keys=['utm_source','utm_medium','utm_campaign','utm_content'];
+function saveAttributionWithConsent(){
+  const attribution={};
+  keys.forEach(k=>{if(params.get(k))attribution[k]=params.get(k)});
+  try{if(Object.keys(attribution).length)localStorage.setItem('cc_attribution',JSON.stringify(attribution))}catch{}
+}
+function clearAttribution(){try{localStorage.removeItem('cc_attribution')}catch{}}
 
-// GA4 only loads after explicit consent.
+// GA4 no se carga hasta que existe consentimiento afirmativo.
 function gaId(){return window.CC_CONFIG?.GA_MEASUREMENT_ID?.trim()||''}
-function loadGA(){const id=gaId();if(!id||window.__ccGaLoaded)return;window.__ccGaLoaded=true;const s=document.createElement('script');s.async=true;s.src=`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;document.head.appendChild(s);window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config',id,{anonymize_ip:true});trackCalculatorView()}
+function loadGA(){
+  const id=gaId();
+  if(!id||window.__ccGaLoaded)return;
+  window.__ccGaLoaded=true;
+  const s=document.createElement('script');
+  s.async=true;
+  s.src=`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;
+  document.head.appendChild(s);
+  window.dataLayer=window.dataLayer||[];
+  window.gtag=function(){dataLayer.push(arguments)};
+  gtag('js',new Date());
+  gtag('config',id,{anonymize_ip:true});
+  trackCalculatorView();
+}
+function disableGA(){
+  const id=gaId();
+  if(id)window['ga-disable-'+id]=true;
+}
 if(gaId()){
-  let pref=null;try{pref=localStorage.getItem('cc_analytics_consent')}catch{} const box=document.querySelector('[data-cookie]');
-  if(pref==='yes')loadGA(); else if(pref!=='no')box?.classList.add('show');
-  document.querySelector('[data-cookie-accept]')?.addEventListener('click',()=>{try{localStorage.setItem('cc_analytics_consent','yes')}catch{}box?.classList.remove('show');loadGA()});
-  document.querySelector('[data-cookie-reject]')?.addEventListener('click',()=>{try{localStorage.setItem('cc_analytics_consent','no')}catch{}box?.classList.remove('show')});
+  const footer=document.querySelector('.site-footer');
+  if(footer){
+    const settingsRow=document.createElement('div');
+    settingsRow.className='wrap privacy-preferences';
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='privacy-preferences-button';
+    btn.textContent='Configurar privacidad';
+    settingsRow.appendChild(btn);
+    footer.appendChild(settingsRow);
+  }
+  let pref=null;
+  try{pref=localStorage.getItem('cc_analytics_consent')}catch{}
+  if(pref==='yes'){saveAttributionWithConsent();loadGA()}
+  else clearAttribution();
+
+  let box=document.querySelector('[data-cookie]');
+  // Algunas páginas no incluyen un aviso propio; se crea con las mismas opciones.
+  if(!box){
+    box=document.createElement('div');
+    box.className='cookie';
+    box.dataset.cookie='';
+    box.innerHTML='<p>Usamos Google Analytics solo si lo aceptas. Puedes usar la web si rechazas. <a href="/cookies">Política de cookies</a> y <a href="/privacidad">privacidad</a>.</p><div class="cookie-actions"><button type="button" class="accept" data-cookie-accept>Aceptar Analytics</button><button type="button" data-cookie-reject>Rechazar</button></div>';
+    document.body.appendChild(box);
+  } else {
+    const message=box.querySelector('p');
+    if(message&&!message.querySelector('a'))message.insertAdjacentHTML('beforeend',' <a href="/cookies">Política de cookies</a> y <a href="/privacidad">privacidad</a>.');
+  }
+  if(pref!=='yes'&&pref!=='no')box.classList.add('show');
+
+  document.querySelector('.privacy-preferences-button')?.addEventListener('click',()=>{
+    box.classList.add('show');
+    box.querySelector('[data-cookie-accept]')?.focus();
+  });
+  box.querySelector('[data-cookie-accept]')?.addEventListener('click',()=>{
+    try{localStorage.setItem('cc_analytics_consent','yes')}catch{}
+    saveAttributionWithConsent();
+    box.classList.remove('show');
+    loadGA();
+  });
+  box.querySelector('[data-cookie-reject]')?.addEventListener('click',()=>{
+    const wasAccepted=pref==='yes'||window.__ccGaLoaded===true;
+    try{localStorage.setItem('cc_analytics_consent','no')}catch{}
+    clearAttribution();
+    disableGA();
+    box.classList.remove('show');
+    // Al recargar, no se inyecta ninguna etiqueta de Analytics.
+    if(wasAccepted)location.reload();
+  });
 }
 run();
 })();
