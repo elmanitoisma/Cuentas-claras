@@ -30,6 +30,21 @@ const calculators={
   mortgage(){
     const P=num('m-amount'),years=Math.max(1,Math.round(num('m-years'))),annual=num('m-rate'),n=years*12,q=annuityPayment(P,n,annual),total=q*n,interest=Math.max(0,total-P),pc=total?P/total*100:0;
     out(`<div class="big"><small>Cuota mensual estimada</small>${eur(q,2)}</div>${metrics([['Capital',eur(P)],['Intereses totales',eur(interest)],['Total pagado',eur(total)]])}<div><div class="split"><b style="width:${pc}%;background:var(--teal)"></b><b style="width:${100-pc}%;background:var(--gold)"></b></div><div class="legend" style="margin-top:9px"><span><i style="background:var(--teal)"></i>Capital</span><span><i style="background:var(--gold)"></i>Intereses</span></div></div>${note('Cálculo con sistema francés, tipo constante y cuotas mensuales. No incluye comisiones, seguros, impuestos ni otros gastos asociados.')}`);
+    const comparison=document.querySelector('[data-mortgage-comparison]');
+    if(comparison){
+      const yearsB=Math.min(50,Math.max(1,Math.round(num('m-compare-years'))));
+      const interestRateB=Math.min(30,num('m-compare-rate'));
+      const nB=yearsB*12,qB=annuityPayment(P,nB,interestRateB),totalB=qB*nB;
+      const intB=Math.max(0,totalB-P);
+      const deltaMonthly=qB-q,deltaInterests=intB-interest;
+      const difference=(value,unit='')=>`${value>0?'+':value<0?'−':''}${eur(Math.abs(value),2)}${unit}`;
+      comparison.innerHTML=`
+      <div class="comparison-results">
+        <div class="comparison-card"><span>Escenario A · ${years} años · ${pct(annual)} TIN</span><strong>${eur(q,2)} / mes</strong><small>Intereses: ${eur(interest)}</small><small>Total cuotas: ${eur(total)}</small></div>
+        <div class="comparison-card"><span>Escenario B · ${yearsB} años · ${pct(interestRateB)} TIN</span><strong>${eur(qB,2)} / mes</strong><small>Intereses: ${eur(intB)}</small><small>Total cuotas: ${eur(totalB)}</small></div>
+      </div>
+      <p class="compare-difference">Diferencia de B frente a A: <strong>${difference(deltaMonthly,' / mes')}</strong> en cuota y <strong>${difference(deltaInterests)}</strong> en intereses totales.</p>`;
+    }
   },
   goal(){
     const target=num('g-target'),start=num('g-start'),years=Math.max(1,Math.round(num('g-years'))),annual=num('g-rate'),n=years*12,r=annual/1200,f=Math.pow(1+r,n);
