@@ -146,6 +146,19 @@ h1,h2,h3,p{margin-top:0}
 .card p{color:var(--muted);line-height:1.5;font-size:.9rem}
 .icon{width:42px;height:42px;display:grid;place-items:center;border-radius:11px;background:var(--teal-soft)}
 .go{color:var(--teal);font-weight:800;font-size:.86rem}
+.mortgage-compare{margin-top:24px;padding:24px;border-radius:20px;background:var(--surface);border:1px solid var(--line)}
+.mortgage-compare h2{font-size:clamp(1.3rem,3vw,1.9rem);line-height:1.2;margin:8px 0 12px;letter-spacing:-.03em}
+.mortgage-compare .note{max-width:760px}
+.mortgage-compare .note a{color:var(--teal);text-decoration:underline}
+.compare-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;max-width:640px;margin:22px 0}
+.compare-controls label{font-size:.84rem;font-weight:700;color:var(--muted)}
+.comparison-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.comparison-card{background:var(--bg);border:1px solid var(--line);padding:18px;border-radius:14px;display:grid;gap:7px;min-width:0}
+.comparison-card span{color:var(--muted);font-size:.78rem;font-weight:700}
+.comparison-card strong{font-size:clamp(1.15rem,3vw,1.65rem);letter-spacing:-.035em}
+.comparison-card small{color:var(--muted);font-size:.84rem}
+.compare-difference{line-height:1.6;margin:16px 0}
+@media(max-width:600px){.mortgage-compare{padding:16px}.comparison-results,.compare-controls{grid-template-columns:1fr}}
 .tool-shell{display:grid;grid-template-columns:minmax(280px,.78fr) minmax(0,1.22fr);background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 16px 44px rgba(16,32,33,.05)}
 .inputs{padding:26px;border-right:1px solid var(--line);display:grid;gap:15px;align-content:start}
 .inputs label{font-size:.78rem;color:var(--muted);font-weight:700}
