@@ -8,8 +8,8 @@ Estado de revisión: 29 de octubre de 2026.
 - Sitio estático desplegado con Vercel, URLs sin `.html`, sitemap, robots.txt y canonical.
 - Calculadoras y guías originales, con ejemplos y metodología explicada.
 - Google Analytics 4 está integrado con consentimiento previo y un control para cambiar las preferencias.
-- Existen páginas públicas de aviso legal, privacidad y cookies, **todavía con información identificativa pendiente**.
-- **Verificación AdSense preparada**: metaetiqueta `google-adsense-account` instalada en la portada y tres calculadoras principales; archivo `ads.txt` creado con el ID de editor aportado por el titular. No se ha cargado el script publicitario ni configurado una CMP publicitaria.
+- Existen páginas públicas de aviso legal, privacidad y cookies. El titular autorizó publicar sus datos de identificación, que se añadieron a aviso legal y privacidad. Continúa pendiente una auditoría final de proveedores y cookies.
+- **Verificación AdSense completada según captura del titular**. El meta `google-adsense-account` y `ads.txt` están configurados. El script oficial `adsbygoogle.js` de anuncios automáticos está incluido en las páginas de contenido, pero aún no se ha confirmado la aprobación del sitio ni publicado una CMP publicitaria.
 - Los contenidos sobre finanzas son informativos, no asesoramiento financiero.
 
 ## Paso 1 — Revisar la identidad y la información legal
@@ -43,7 +43,7 @@ Estado de revisión: 29 de octubre de 2026.
 - No hacer clic en anuncios propios ni provocar tráfico o clics artificiales.
 
 ## Pendientes que bloquean la activación de anuncios
-- [ ] Confirmación y publicación adecuada de la identidad legal del titular.
+- [x] Identidad del titular publicada en aviso legal y política de privacidad, con autorización explícita del titular. Revisar su adecuación jurídica antes de monetizar.
 - [ ] Política de privacidad y cookies revisadas y auditadas.
 - [x] Cuenta AdSense creada; método de etiqueta meta configurado en el sitio (el titular debe seleccionar **Etiqueta meta** y hacer clic en **Verificar** en AdSense).
 - [x] ID de editor real configurado en `ads.txt` y en la etiqueta meta (sin mostrarlo de nuevo en esta lista).
@@ -63,7 +63,7 @@ Estado de revisión: 29 de octubre de 2026.
 - Vercel informa de un despliegue correcto de los archivos modificados.
 - Se ha configurado `<meta name="google-adsense-account" ...>` en la portada y tres calculadoras principales.
 - El archivo `/ads.txt` contiene la línea estándar de Google con el ID real facilitado en una captura de AdSense.
-- El script de anuncios no se ha añadido, y ningún código publicitario se activa por la metaetiqueta ni por `ads.txt`.
-- **Pendiente:** verificar en la interfaz de AdSense con el método «Etiqueta meta». Google realiza la comprobación en sus servidores.
+- El script de anuncios automáticos ya está incluido de forma asíncrona en 23 páginas de contenido. Las páginas de aviso legal, privacidad, cookies y verificación de Search Console quedan sin código de anuncios.
+- El titular confirmó mediante captura que la verificación de propiedad del sitio en AdSense figuraba completada.
 - **Pendiente:** confirmar respuesta HTTP 200 y contenido correcto de `https://cuentas-claras-murex-delta.vercel.app/ads.txt` en un navegador externo; el despliegue exitoso no sustituye esta prueba.
-- **No solicitar revisión final hasta resolver** la identificación legal del sitio y completar las políticas de privacidad/cookies y el plan de consentimiento publicitario. Estos asuntos pueden afectar a la aprobación y al cumplimiento legal.
+- **Próximos pasos:** solicitar la revisión del sitio desde AdSense y crear/publicar la CMP certificada de Google con opciones de consentir, rechazar y gestionar preferencias. Revisar proveedores y cookies antes de que se sirvan anuncios. La aprobación no es automática.
