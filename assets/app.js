@@ -22,10 +22,24 @@ let trackedInteraction=false;
 const calculatorType=()=>document.body.dataset.calc||'';
 const calculators={
   compound(){
-    const ini=num('c-ini'),mes=num('c-mes'),years=Math.min(60,Math.max(1,Math.round(num('c-years')))),annual=num('c-rate'),r=annual/1200;
+    const ini=num('c-ini'),mes=num('c-mes'),years=Math.min(60,Math.max(1,Math.round(num('c-years')))),annual=Math.min(50,num('c-rate')),r=annual/1200;
     let bal=ini,con=ini;const B=[bal],C=[con];
     for(let m=1;m<=years*12;m++){bal=bal*(1+r)+mes;con+=mes;if(m%12===0){B.push(bal);C.push(con)}}
-    out(`<div class="big"><small>Capital estimado en ${years} años</small>${eur(bal)}</div>${metrics([['Aportado por ti',eur(con)],['Crecimiento estimado',eur(bal-con)],['Rentabilidad usada',pct(annual)]])}${chart(B,C)}${note('Escenario teórico con rentabilidad constante. No incluye impuestos, inflación, comisiones ni variaciones del mercado.')}`);
+    out(`<div class="big"><small>Capital estimado en ${years} años</small>${eur(bal)}</div>${metrics([['Aportado por ti',eur(con)],['Crecimiento estimado',eur(bal-con)],['Rentabilidad usada',pct(annual)]])}${chart(B,C)}${note('Escenario teórico con rentabilidad nominal anual constante dividida entre 12. No incluye impuestos, inflación, comisiones ni variaciones del mercado.')}`);
+    const comparison=document.querySelector('[data-compound-comparison]');
+    if(comparison){
+      const monthlyB=num('c-alt-monthly'),yearsB=Math.min(60,Math.max(1,Math.round(num('c-alt-years')))),annualB=Math.min(50,num('c-alt-rate')),rateB=annualB/1200;
+      let finalB=ini,contribB=ini;
+      for(let m=0;m<yearsB*12;m++){finalB=finalB*(1+rateB)+monthlyB;contribB+=monthlyB}
+      const growthB=finalB-contribB;
+      const delta=finalB-bal;
+      comparison.innerHTML=`<div class="comparison-results">
+        <div class="comparison-card"><span>Escenario A · ${eur(mes)} / mes · ${years} años · ${pct(annual)} nominal anual</span><strong>${eur(bal)} finales</strong><small>Aportado: ${eur(con)}</small><small>Crecimiento teórico: ${eur(bal-con)}</small></div>
+        <div class="comparison-card"><span>Escenario B · ${eur(monthlyB)} / mes · ${yearsB} años · ${pct(annualB)} nominal anual</span><strong>${eur(finalB)} finales</strong><small>Aportado: ${eur(contribB)}</small><small>Crecimiento teórico: ${eur(growthB)}</small></div>
+      </div>
+      <p class="compare-difference">Diferencia de capital final de B respecto a A: <strong>${delta>0?'+':delta<0?'−':''}${eur(Math.abs(delta))}</strong>.</p>
+      <p class="note">Si los plazos son diferentes, compara también el dinero aportado: un capital final superior no significa necesariamente mejor rentabilidad.</p>`;
+    }
   },
   mortgage(){
     const P=num('m-amount'),years=Math.max(1,Math.round(num('m-years'))),annual=num('m-rate'),n=years*12,q=annuityPayment(P,n,annual),total=q*n,interest=Math.max(0,total-P),pc=total?P/total*100:0;
@@ -87,11 +101,48 @@ function trackCalculatorView(){const type=calculatorType();if(type&&!trackedCalc
 function run(){const type=calculatorType();if(type&&calculators[type]){calculators[type]();trackCalculatorView()}}
 document.querySelectorAll('[data-calc-input]').forEach(el=>el.addEventListener('input',()=>{run();const type=calculatorType();if(type&&!trackedInteraction&&track('calculator_interaction',{calculator:type})){trackedInteraction=true}}));
 
-// Share/copy helpers
-async function copyLink(){try{await navigator.clipboard.writeText(location.href);flash('Enlace copiado');track('copy_link',{calculator:calculatorType()||'none'})}catch{flash('Copia la URL del navegador')}}
+// Share/copy helpers. En interés compuesto se comparte el escenario realmente visible.
+const compoundParams=[
+  ['inicio','c-ini',0,100000000],
+  ['mensual','c-mes',0,10000000],
+  ['anios','c-years',1,60],
+  ['interes','c-rate',0,50],
+  ['mensualB','c-alt-monthly',0,10000000],
+  ['aniosB','c-alt-years',1,60],
+  ['interesB','c-alt-rate',0,50]
+];
+function calculatorShareUrl(){
+  if(calculatorType()!=='compound')return location.href;
+  const u=new URL(location.href);
+  for(const [key,id,min,max] of compoundParams){
+    const el=document.getElementById(id);
+    if(!el)continue;
+    const val=parseFloat(el.value);
+    if(Number.isFinite(val))u.searchParams.set(key,String(Math.min(max,Math.max(min,val))));
+  }
+  return u.toString();
+}
+function applyCompoundQuery(){
+  if(calculatorType()!=='compound')return;
+  const params=new URLSearchParams(location.search);
+  for(const [key,id,min,max] of compoundParams){
+    const value=params.get(key),el=document.getElementById(id);
+    if(value===null||!el||value.length>30)continue;
+    const n=Number(value);
+    if(Number.isFinite(n)&&n>=min&&n<=max)el.value=String(n);
+  }
+}
+async function copyLink(){try{await navigator.clipboard.writeText(calculatorShareUrl());flash('Enlace copiado');track('copy_link',{calculator:calculatorType()||'none'})}catch{flash('Copia la URL del navegador')}}
 function flash(text){const b=document.querySelector('[data-copy]');if(!b)return;const old=b.textContent;b.textContent=text;setTimeout(()=>b.textContent=old,1600)}
 document.querySelector('[data-copy]')?.addEventListener('click',copyLink);
-document.querySelector('[data-share]')?.addEventListener('click',async()=>{if(navigator.share){try{await navigator.share({title:document.title,url:location.href});track('share_click',{calculator:calculatorType()||'none'})}catch{}}else copyLink()});
+document.querySelector('[data-share]')?.addEventListener('click',async()=>{if(navigator.share){try{await navigator.share({title:document.title,url:calculatorShareUrl()});track('share_click',{calculator:calculatorType()||'none'})}catch{}}else copyLink()});
+applyCompoundQuery();
+document.querySelectorAll('[data-compound-preset]').forEach(btn=>btn.addEventListener('click',()=>{
+  const value=Number(btn.dataset.compoundPreset),input=document.getElementById('c-alt-monthly');
+  if(!input||![100,200,300].includes(value))return;
+  input.value=String(value);
+  run();
+}));
 
 // Guardar atribución de campaña solo cuando la persona ha aceptado Analytics.
 const params=new URLSearchParams(location.search);
