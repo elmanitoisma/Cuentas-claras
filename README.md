@@ -26,9 +26,10 @@ Sitio educativo de calculadoras financieras gratuitas, publicado en Vercel.
 - Las páginas `aviso-legal.html`, `privacidad.html` y `cookies.html` aún requieren revisión final y completar la identificación del titular. No publicar documentos personales o identificadores fiscales en este repositorio sin autorización explícita.
 
 ## AdSense
-- **No está conectado ni aprobado**. No insertar IDs falsos ni afirmar que un `ads.txt` vacío implica autorización.
-- Consultar `ADSENSE_PREPARACION.md` para requisitos, pasos y fuentes oficiales.
-- La integración de verificación y `ads.txt` requiere los datos reales de la cuenta; la publicación de anuncios también exige revisar privacidad y CMP aplicable.
+- Cuenta AdSense vinculada: verificación de propiedad confirmada por el titular; archivo `ads.txt` creado con el ID real.
+- Script oficial de anuncios automáticos incorporado en **23 páginas de contenido** (calculadoras, guías y sección de metodología). No se inserta en aviso legal, privacidad ni cookies.
+- La verificación y el despliegue del script **no equivalen a aprobación** del sitio. La publicación efectiva de anuncios está supeditada a revisión de Google y a la configuración apropiada de la CMP certificada para usuarios de España/EEE.
+- Consultar `ADSENSE_PREPARACION.md` para pasos pendientes y fuentes oficiales.
 
 ## Campañas para Shorts
 Ejemplo de URL para etiquetar visitas orgánicas:
