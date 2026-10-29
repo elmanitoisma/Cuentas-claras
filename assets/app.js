@@ -91,8 +91,22 @@ const calculators={
     out(`<div class="big"><small>Ahorro / objetivos</small>${eur(income*save/100)}</div>${metrics([['Necesidades',eur(income*needs/100)],['Deseos',eur(income*wants/100)],['Total porcentajes',pct(sum)]])}${sum!==100?notice('Los porcentajes no suman 100 %',`Ahora mismo suman ${pct(sum)}. Puedes usarlos como simulación, pero quedará ${sum<100?'una parte sin asignar':'más presupuesto asignado que ingreso disponible'}.`,'warn'):note('El 50/30/20 es solo una plantilla de reparto. Los porcentajes son editables para adaptarlos a tu propio presupuesto.')}`);
   },
   homebuy(){
-    const price=num('h-price'),downPct=num('h-down'),costPct=num('h-costs'),saved=num('h-saved'),down=price*downPct/100,costs=price*costPct/100,cash=down+costs,mortgage=Math.max(0,price-down),gap=saved-cash;
+    const price=num('h-price'),downPct=Math.min(100,num('h-down')),costPct=Math.min(50,num('h-costs')),saved=num('h-saved'),down=price*downPct/100,costs=price*costPct/100,cash=down+costs,mortgage=Math.max(0,price-down),gap=saved-cash;
     out(`<div class="big"><small>Efectivo estimado necesario</small>${eur(cash)}</div>${metrics([['Entrada',eur(down)],['Otros costes estimados',eur(costs)],['Hipoteca teórica',eur(mortgage)]])}${gap>=0?notice('Ahorro suficiente para este supuesto',`Con los porcentajes introducidos sobrarían ${eur(gap)} respecto al efectivo calculado.`):notice('Ahorro pendiente',`Con los porcentajes introducidos faltarían ${eur(Math.abs(gap))} para cubrir entrada y costes estimados.`,'warn')}${note('Los gastos reales de compra dependen de la operación, la vivienda y tu situación. Por eso el porcentaje de costes es editable.')}`);
+    const planner=document.querySelector('[data-homebuy-planner]');
+    if(planner){
+      const monthly=num('h-monthly-save'),years=Math.min(50,Math.max(1,Math.round(num('h-mortgage-years')))),rate=Math.min(30,num('h-mortgage-rate'));
+      const missing=Math.max(0,cash-saved);
+      const months=monthly>0?Math.ceil(missing/monthly):null;
+      let targetMessage;
+      if(missing===0)targetMessage='Objetivo de efectivo alcanzado para estos supuestos';
+      else if(monthly===0)targetMessage='Introduce un ahorro mensual mayor que cero para calcular el plazo';
+      else if(months>1200)targetMessage='Más de 100 años con este ritmo de ahorro';
+      else targetMessage=`${months} meses (${Math.floor(months/12)} años y ${months%12} meses)`;
+      const q=annuityPayment(mortgage,years*12,rate),total=q*years*12;
+      planner.innerHTML=`<div class="comparison-card"><span>Cuánto falta ahorrar</span><strong>${eur(missing)}</strong><small>Plazo estimado: ${targetMessage}</small><small>Ahorrando ${eur(monthly)} al mes, sin rendimiento</small></div>
+      <div class="comparison-card"><span>Cuota hipotecaria hipotética</span><strong>${eur(q,2)} / mes</strong><small>Financiación: ${eur(mortgage)} · ${years} años · ${pct(rate)} TIN</small><small>Intereses teóricos: ${eur(Math.max(0,total-mortgage))}</small></div>`;
+    }
   }
 };
 function storedAttribution(){try{return localStorage.getItem('cc_analytics_consent')==='yes'?(JSON.parse(localStorage.getItem('cc_attribution')||'{}')||{}):{}}catch{return {}}}
