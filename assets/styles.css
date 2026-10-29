@@ -217,7 +217,8 @@ h1,h2,h3,p{margin-top:0}
 .cookie p{margin:0 0 11px;color:var(--muted);font-size:.84rem;line-height:1.45}
 .cookie-actions{display:flex;gap:8px;flex-wrap:wrap}
 .cookie button{border:1px solid var(--line);background:var(--bg);color:var(--ink);font-weight:800;border-radius:10px;padding:9px 12px;cursor:pointer}
-.cookie button.accept{background:var(--teal);border-color:var(--teal);color:#fff}
+.cookie button.accept,.cookie button[data-cookie-reject]{background:var(--teal);border-color:var(--teal);color:#fff}
+.cookie button.accept:focus-visible,.cookie button[data-cookie-reject]:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
 @media(max-width:980px){
