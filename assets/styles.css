@@ -273,3 +273,12 @@ h1,h2,h3,p{margin-top:0}
 @media(prefers-reduced-motion:reduce){
   *{scroll-behavior:auto!important;transition:none!important}
 }
+/* Tabla comparativa educativa para interés compuesto: desplazable en móviles */
+.seo-table-scroll{max-width:100%;overflow-x:auto;margin:18px 0 20px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.seo-table-scroll:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+.seo-data-table{border-collapse:collapse;width:100%;min-width:550px;font-size:.94rem;font-variant-numeric:tabular-nums}
+.seo-data-table caption{caption-side:top;text-align:left;font-weight:750;color:var(--ink);padding:12px 15px;background:var(--surface-2)}
+.seo-data-table th,.seo-data-table td{padding:12px 14px;text-align:right;border-top:1px solid var(--line);white-space:nowrap}
+.seo-data-table th:first-child,.seo-data-table td:first-child{text-align:left}
+.seo-data-table thead th{color:var(--ink);background:var(--surface-2)}
+.seo-data-table tbody th{font-weight:750;color:var(--ink)}
