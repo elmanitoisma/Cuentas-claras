@@ -67,6 +67,20 @@ const calculators={
   },
   loan(){
     const P=num('l-amount'),months=Math.max(1,Math.round(num('l-months'))),annual=num('l-rate'),feePct=num('l-fee'),q=annuityPayment(P,months,annual),interest=q*months-P,fee=P*feePct/100,total=q*months+fee;
+    const tableBody = document.getElementById('filas-amortizacion');
+    if (tableBody && months <= 240) {
+      let balance = P;
+      const rows = [];
+      for (let month = 1; month <= months; month++) {
+        const interestPart = balance * (annual / 1200);
+        const principalPart = month === months ? balance : Math.min(balance, Math.max(0, q - interestPart));
+        balance -= principalPart;
+        rows.push(`<tr><th scope="row">${month}</th><td>${eur(interestPart, 2)}</td><td>${eur(principalPart, 2)}</td><td>${eur(balance, 2)}</td></tr>`);
+      }
+      tableBody.innerHTML = rows.join('');
+    } else if (tableBody) {
+      tableBody.innerHTML = '<tr><td colspan="4">Introduce un plazo de hasta 240 meses para consultar el cuadro.</td></tr>';
+    }
     out(`<div class="big"><small>Cuota mensual estimada</small>${eur(q,2)}</div>${metrics([['Intereses',eur(interest)],['Comisión inicial',eur(fee)],['Desembolso total',eur(total)]])}${note('Estimación con cuota constante y TIN. Para comparar ofertas reales, revisa la TAE y las condiciones completas de cada entidad.')}`);
   },
   deposit(){
